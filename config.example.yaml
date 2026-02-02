@@ -1,0 +1,131 @@
+# China AI News Monitor - Configuration Template
+# Copy this file to config.yaml and fill in your own settings
+
+# =============================================================================
+# EMAIL CONFIGURATION
+# =============================================================================
+email:
+  smtp_server: smtp.gmail.com        # SMTP server (e.g., smtp.gmail.com, smtp.office365.com)
+  smtp_port: 587                     # SMTP port (587 for TLS, 465 for SSL)
+  sender_email: your-email@gmail.com  # Your email address
+  sender_password: your-app-password  # App password (NOT your regular password!)
+  recipient_email: friend@example.com # Recipient email address
+  sender_name: China AI News Monitor  # Display name in emails
+
+# =============================================================================
+# MONITORING SETTINGS
+# =============================================================================
+monitoring:
+  send_time: "08:00"                 # Time to send daily digest (24-hour format, e.g., "08:00")
+  timezone: "US/Pacific"             # Your timezone (e.g., "US/Pacific", "Asia/Shanghai", "Europe/London")
+  max_articles_per_category: 10      # Maximum articles per category
+  # Schedule settings
+  days_of_week: [1, 2, 3, 4, 5]      # Monday=1, Friday=5 (weekdays only)
+  # Article age limits
+  normal_hours: 24                   # Articles from last 24 hours (Tue-Fri)
+  monday_hours: 72                   # Articles from last 72 hours (Monday - covers weekend)
+
+# =============================================================================
+# NEWS CATEGORIES
+# =============================================================================
+categories:
+  ai_releases:
+    name: 🤖 New AI Model & Product Releases
+    keywords:
+    - AI大模型 发布
+    - 大模型 发布
+    - 文心一言 更新
+    - 通义千问 新版本
+    - 讯飞星火 发布
+    - 智谱AI 新模型
+    - 月之暗面 Kimi
+    - 零一万物 发布
+    - Minimax 发布
+    - 阶跃星辰 发布
+    - AI 产品 上线
+    - 国产大模型 发布
+    sources:
+    - 36氪
+    - 量子位
+    - 机器之心
+    - AI科技评论
+    - 澎湃科技
+    - 第一财经
+  government_policies:
+    name: 📜 AI & Technology Governance Policies
+    keywords:
+    - 人工智能 政策
+    - AI 监管 政策
+    - 生成式AI 管理
+    - 算法 推荐 管理规定
+    - 数据 安全 法
+    - 个人信息保护法
+    - 网络 安全 法
+    - 科技 部 政策
+    - 网信办 AI
+    - 人工智能治理
+    - AI 伦理 指南
+    - 数字经济 政策
+    sources:
+    - 新华社
+    - 人民网
+    - 央视新闻
+    - 国务院公报
+    - 工信部
+    - 网信办
+    - 科技部
+    - 发改委
+  social_impact:
+    name: 📖 Long Reads: Social Impact of AI
+    keywords:
+    - AI 社会 影响
+    - 人工智能 伦理
+    - AI 就业 影响
+    - 人工智能 教育
+    - AI 公平性
+    - 算法 偏见
+    - 人工智能 隐私
+    - AI 对话 社会
+    - 大模型 社会价值
+    - AI 技术 反思
+    sources:
+    - 财新
+    - 南方周末
+    - 三联生活周刊
+    - 澎湃新闻
+    - 新京报
+    - 凤凰周刊
+    - FT中文网
+    - 纽约时报中文网
+
+# =============================================================================
+# SOURCE TRUST WEIGHTS
+# =============================================================================
+source_weights:
+  新华社: 1.0
+  人民网: 1.0
+  央视新闻: 1.0
+  财新: 1.0
+  南方周末: 1.0
+  国务院公报: 1.0
+  工信部: 1.0
+  网信办: 1.0
+  科技部: 1.0
+  发改委: 1.0
+  36氪: 0.9
+  量子位: 0.9
+  机器之心: 0.9
+  澎湃新闻: 0.9
+  第一财经: 0.8
+  新京报: 0.8
+  凤凰周刊: 0.7
+  三联生活周刊: 0.8
+  AI科技评论: 0.7
+
+# =============================================================================
+# FILTERING SETTINGS
+# =============================================================================
+filtering:
+  min_trust_score: 0.7               # Minimum trust score for articles
+  max_age_days: 1                    # Maximum age in days (fractional, e.g., 0.5 for 12 hours)
+  min_long_read_length: 2000         # Minimum character count for "long read" articles
