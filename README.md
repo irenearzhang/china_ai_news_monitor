@@ -1,6 +1,6 @@
 # China AI News Monitor
 
-A daily email digest service that monitors Chinese AI news from reputable Chinese-language sources. This tool automatically fetches and sends you a curated daily email containing:
+A daily email digest service that monitors Chinese AI news from 180+ reputable Chinese-language sources. This tool automatically fetches and sends you a curated daily email containing:
 
 - 🤖 New AI model and product releases from Chinese AI labs
 - 📜 AI and technology governance policies from Chinese government bodies  
@@ -8,10 +8,10 @@ A daily email digest service that monitors Chinese AI news from reputable Chines
 
 ## ⭐ Features
 
-- **Automated Daily Digests**: Receives fresh news every weekday morning
+- **180+ Curated Sources**: From major tech media to popular WeChat channels
 - **Smart Date Filtering**: Only includes articles from the last 24 hours (72 hours on Mondays)
-- **Curated Sources**: Only pulls from reputable Chinese-language media outlets
-- **Trust Scoring**: Articles are scored based on source credibility
+- **Trust Scoring**: Articles are scored based on source credibility (100+ sources)
+- **Automated Daily Digests**: Receives fresh news every weekday morning
 - **Categorized Content**: Clear organization by news category
 - **Weekday Only**: No weekend emails - respects your personal time
 - **Responsive HTML Email**: Beautiful, readable email format
@@ -26,15 +26,15 @@ A daily email digest service that monitors Chinese AI news from reputable Chines
    cd china-ai-news-monitor
    ```
 
-2. **Run the setup script:**
+2. **Copy and configure:**
    ```bash
-   chmod +x setup.sh
-   ./setup.sh
+   cp config.yaml.example config.yaml
+   # Edit config.yaml with your email settings
    ```
 
-3. **Configure your email:**
+3. **Install dependencies:**
    ```bash
-   python main.py --setup
+   pip install -r requirements.txt
    ```
 
 4. **Test it out:**
@@ -44,7 +44,52 @@ A daily email digest service that monitors Chinese AI news from reputable Chines
 
 That's it! Check your inbox for your first AI news digest.
 
-For detailed instructions, see [QUICKSTART.md](QUICKSTART.md).
+## 📰 Monitored Categories
+
+| Category | Description | Sources |
+|----------|-------------|---------|
+| 🤖 AI Releases | New models and products | 60+ sources |
+| 📜 Policies | Government regulations | 40+ sources |
+| 📖 Social Impact | Long-form analysis | 80+ sources |
+
+### 🤖 AI Releases Sources
+
+**Tech Media:** 36氪, 量子位, 机器之心, AI科技评论, 澎湃科技, 第一财经, 虎嗅, 钛媒体, 极客公园, 爱范儿, IT之家, 雷锋网, 智东西, 深科技, InfoQ, 甲子光年
+
+**WeChat AI Channels:** 我爱计算机视觉, 机器学习社区, AI派, 深度学习社区, DataFunTalk, 大数据文摘, 算法与数学之美, AI产品君, 新智元, CSDN, GitChat
+
+**Business & Investment:** 晚点LatePost, 42章经, 乱翻书, 投中网, 36氪Pro
+
+**International:** 南华早报, SCMP, Reuters China, Bloomberg China
+
+### 📜 Government Policy Sources
+
+**Official Government:** 新华社, 人民网, 央视新闻, 国务院公报, 工信部, 网信办, 科技部, 发改委, 教育部, 财政部, 司法部, 国家数据局, 国家知识产权局
+
+**Official WeChat:** 网信中国, 工信微报, 科技部发布, 国家发展改革委, 中国政府网
+
+**Policy Analysis:** 财新, 南方周末, 澎湃思想市场, FT中文网, 经济学人
+
+### 📖 Social Impact Sources
+
+**Long-form Journalism:** 财新, 南方周末, 三联生活周刊, 澎湃新闻, 新京报, 凤凰周刊, 南方人物周刊, 人物, GQ中国
+
+**Society & Culture:** X博士, 故事硬核, 好奇心日报, 全现在, 端传媒, 网易浪潮, 谷雨实验室
+
+**Lifestyle & Tech Impact:** 硬核电台, 故事FM, 随机波动, 声东击西
+
+**Academic:** 清华大学, 北京大学, 中国社科院, 中国信通院, 中国人工智能学会
+
+## 🏆 Source Credibility System
+
+| Tier | Score | Sources |
+|------|-------|---------|
+| Tier 1 | 1.0 | Official government (新华社, 人民网, 工信部, etc.) |
+| Tier 2 | 0.95-1.0 | Premium journalism (财新, 南方周末, 三联) |
+| Tier 3 | 0.85-0.9 | Major tech media (36氪, 量子位, 机器之心) |
+| Tier 4 | 0.8-0.85 | Tech news (智东西, InfoQ, 甲子光年) |
+| Tier 5 | 0.7-0.8 | WeChat AI channels (我爱计算机视觉, etc.) |
+| Tier 6+ | 0.65-0.75 | Society, culture, academic sources |
 
 ## 📁 What's Included
 
@@ -53,13 +98,13 @@ china-ai-news-monitor/
 ├── main.py              # Main application (run this!)
 ├── news_fetcher.py      # News fetching and filtering
 ├── email_sender.py      # Email generation and sending
-├── config.example.yaml  # Configuration template
+├── config.yaml.example  # Configuration template (safe to share)
 ├── config.yaml          # Your personal settings (not shared)
-├── setup.sh             # Setup script
 ├── requirements.txt     # Python dependencies
-├── QUICKSTART.md        # 5-minute setup guide
+├── setup.sh             # Setup script
+├── .gitignore           # Git ignore rules
 ├── README.md            # This file
-└── archive/             # Old test files (not needed)
+└── data/                # Data storage
 ```
 
 ## 🔧 Configuration
@@ -86,24 +131,6 @@ monitoring:
   normal_hours: 24             # Last 24 hours (Tue-Fri)
   monday_hours: 72             # Last 72 hours (Monday)
 ```
-
-## 📰 Monitored Categories
-
-| Category | Description | Examples |
-|----------|-------------|----------|
-| 🤖 AI Releases | New models and products | 文心一言, 通义千问, 智谱AI |
-| 📜 Policies | Government regulations | AI监管, 数据安全法, 网信办政策 |
-| 📖 Social Impact | Long-form analysis | AI伦理, 就业影响, 隐私保护 |
-
-## 🏆 Trusted Sources
-
-**Premium (1.0):** 新华社, 人民网, 财新, 南方周末, 国务院公报, 工信部, 网信办, 科技部, 发改委
-
-**High (0.9):** 36氪, 量子位, 机器之心, 澎湃新闻
-
-**Medium (0.8):** 第一财经, 新京报, 三联生活周刊
-
-**Standard (0.7):** 凤凰周刊, AI科技评论
 
 ## 💡 Usage
 
@@ -146,49 +173,26 @@ This tool is designed to be shared! Here's how:
 ### Option 1: Share the GitHub Link
 Send friends the repository URL and they can clone it.
 
-### Option 2: Export Your Configuration
-If you've customized keywords or sources, you can share your config:
+### Option 2: Direct Setup for Friends
 ```bash
-# Copy your config (remove sensitive email/password first)
-cp config.yaml config.yaml.backup
-# Edit and remove email section before sharing
+git clone https://github.com/yourusername/china-ai-news-monitor.git
+cd china-ai-news-monitor
+cp config.yaml.example config.yaml
+# Edit config.yaml with email settings
+python main.py
 ```
 
 ### Option 3: Fork the Repository
-Friends can fork the repo and customize their own settings.
+Friends can fork the repo and customize their own sources and keywords.
 
-### Customize Before Sharing
+### Customization Before Sharing
 Edit `config.yaml` to change:
-- Keywords for each category
-- News sources to monitor
-- Trust scores for sources
+- Keywords for each category (100+ keywords total)
+- News sources to monitor (180+ sources)
+- Trust scores for sources (100+ weighted sources)
 - Email template styling
 
-## 🛠️ Customization
-
-### Add Custom Keywords
-```yaml
-categories:
-  ai_releases:
-    keywords:
-      - "你的新关键词"
-```
-
-### Add New Sources
-```yaml
-categories:
-  ai_releases:
-    sources:
-      - "新来源"
-
-source_weights:
-  "新来源": 0.8
-```
-
-### Change Email Template
-Edit `_get_email_template()` in `email_sender.py` to customize HTML.
-
-## 📦 Dependencies
+## 🛠️ Dependencies
 
 See `requirements.txt` for full list:
 - PyYAML - Configuration parsing
@@ -207,13 +211,12 @@ pip install -r requirements.txt
 - **Never commit** config.yaml with real credentials to GitHub
 - **Use App Passwords** instead of regular passwords
 - **Review logs** periodically for any issues
-- **Config template** (config.example.yaml) is safe to share
+- **config.yaml.example** is safe to share (no real credentials)
 
 ## 🐛 Troubleshooting
 
 **"Module not found" errors:**
 ```bash
-source venv/bin/activate
 pip install -r requirements.txt
 ```
 
