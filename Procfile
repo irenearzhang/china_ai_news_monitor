@@ -1,1 +1,1 @@
-scheduler: python run_scheduler.py
+web: python app.py
