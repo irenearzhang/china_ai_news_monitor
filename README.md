@@ -1,3 +1,5 @@
+Note: Irene vibecoded this with MiniMax Agent and did not check the codebase; apologies in advance for any bugs
+
 # China AI News Monitor
 
 A daily email digest service that monitors Chinese AI news from 180+ reputable Chinese-language sources. This tool automatically fetches and sends you a curated daily email containing:
