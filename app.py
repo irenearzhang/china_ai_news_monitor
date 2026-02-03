@@ -37,6 +37,29 @@ from email.utils import formataddr
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend
 
+# Admin API key for protected endpoints
+ADMIN_API_KEY = os.environ.get('ADMIN_API_KEY', '')
+
+def require_api_key(f):
+    """Decorator to require API key for admin endpoints."""
+    from functools import wraps
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not ADMIN_API_KEY:
+            return jsonify({'error': 'API key not configured on server'}), 500
+
+        auth_header = request.headers.get('Authorization', '')
+        if auth_header.startswith('Bearer '):
+            provided_key = auth_header[7:]
+        else:
+            provided_key = request.args.get('api_key', '')
+
+        if provided_key != ADMIN_API_KEY:
+            return jsonify({'error': 'Unauthorized'}), 401
+
+        return f(*args, **kwargs)
+    return decorated
+
 # Subscribers storage
 SUBSCRIBERS_FILE = Path(__file__).parent / 'data' / 'subscribers.json'
 
@@ -299,8 +322,9 @@ def unsubscribe():
 
 
 @app.route('/api/subscribers', methods=['GET'])
+@require_api_key
 def list_subscribers():
-    """List all active subscribers (admin endpoint)."""
+    """List all active subscribers (admin endpoint, requires API key)."""
     subscribers = load_subscribers()
     active = [s for s in subscribers if s.get('active', True)]
     return jsonify({
