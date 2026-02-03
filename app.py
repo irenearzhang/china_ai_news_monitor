@@ -111,38 +111,61 @@ class EmailSender:
         self.email_config = config.get('email', {})
     
     def send_digest(self, articles_by_category: dict = None):
-        """Send news digest email."""
+        """Send news digest email to all active subscribers."""
         if not self.email_config.get('sender_email'):
             return False, "Sender email not configured"
-        
+
+        # Get all recipients: subscribers + fallback to RECIPIENT_EMAIL
+        subscribers = load_subscribers()
+        active_emails = [s['email'] for s in subscribers if s.get('active', True)]
+
+        # Add fallback recipient if no subscribers
+        fallback = self.email_config.get('recipient_email')
+        if fallback and fallback not in active_emails:
+            active_emails.append(fallback)
+
+        if not active_emails:
+            return False, "No recipients configured"
+
         try:
-            msg = MIMEMultipart('alternative')
             tz = pytz.timezone(self.config.get('monitoring', {}).get('timezone', 'US/Pacific'))
             now = datetime.now(tz)
-            
             subject = f"🇨🇳 China AI News Daily - {now.strftime('%Y年%m月%d日')}"
-            msg['Subject'] = subject
-            msg['From'] = formataddr((self.email_config.get('sender_name', 'China AI News Monitor'), 
-                                     self.email_config['sender_email']))
-            msg['To'] = self.email_config.get('recipient_email', self.email_config['sender_email'])
-            
-            # Build HTML
             html = self._build_html(now)
-            
-            part1 = MIMEText("", 'plain', 'utf-8')
-            part2 = MIMEText(html, 'html', 'utf-8')
-            msg.attach(part1)
-            msg.attach(part2)
-            
-            # Send
+
+            # Connect to SMTP server once
             server = smtplib.SMTP(self.email_config['smtp_server'], self.email_config['smtp_port'])
             server.starttls()
             server.login(self.email_config['sender_email'], self.email_config['sender_password'])
-            server.send_message(msg)
+
+            sent_count = 0
+            errors = []
+
+            # Send to each subscriber individually
+            for recipient in active_emails:
+                try:
+                    msg = MIMEMultipart('alternative')
+                    msg['Subject'] = subject
+                    msg['From'] = formataddr((self.email_config.get('sender_name', 'China AI News Monitor'),
+                                             self.email_config['sender_email']))
+                    msg['To'] = recipient
+
+                    part1 = MIMEText("", 'plain', 'utf-8')
+                    part2 = MIMEText(html, 'html', 'utf-8')
+                    msg.attach(part1)
+                    msg.attach(part2)
+
+                    server.send_message(msg)
+                    sent_count += 1
+                except Exception as e:
+                    errors.append(f"{recipient}: {str(e)}")
+
             server.quit()
-            
-            return True, "Email sent successfully"
-            
+
+            if errors:
+                return True, f"Sent to {sent_count}/{len(active_emails)} recipients. Errors: {errors}"
+            return True, f"Email sent to {sent_count} subscriber(s)"
+
         except Exception as e:
             return False, str(e)
     
