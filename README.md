@@ -249,4 +249,57 @@ Built with ❤️ for researchers and China tech watchers.
 
 ---
 
+## ☁️ Deploy to Railway (24/7 Automatic)
+
+Deploy to Railway for fully automated 24/7 operation - works even when your computer is off!
+
+### Step 1: Fork the Repository
+1. Go to: https://github.com/irenearzhang/china_ai_news_monitor
+2. Click **"Fork"** (top right) to fork it to your GitHub account
+
+### Step 2: Create Railway Project
+1. Go to: https://railway.app/new
+2. Click **"Login with GitHub"** and authorize Railway
+3. Click **"Deploy from GitHub repo"**
+4. Select your forked repository: `yourusername/china_ai_news_monitor`
+
+### Step 3: Add Environment Variables
+In your Railway project dashboard:
+1. Click on your project → **"Variables"** tab
+2. Add these variables:
+
+| Variable | Value |
+|----------|-------|
+| `SMTP_SERVER` | `smtp.gmail.com` |
+| `SMTP_PORT` | `587` |
+| `SENDER_EMAIL` | `your-email@gmail.com` |
+| `SENDER_PASSWORD` | `your-app-password` |
+| `RECIPIENT_EMAIL` | `recipient@example.com` |
+| `SENDER_NAME` | `China AI News Monitor` |
+| `TIMEZONE` | `US/Pacific` |
+| `SEND_TIME` | `08:00` |
+
+### Step 4: Deploy
+1. Railway will automatically deploy from your GitHub repo
+2. Click **"Deploy"** to start
+3. Check the **"Logs"** tab for status
+
+### Step 5: Verify
+- Check logs for successful deployment
+- Test with: Railway → Your Service → Actions → Run Command → `python test_email.py`
+- You'll receive your first daily email at 8:00 AM!
+
+### Troubleshooting Railway
+- **Email not sending?** Check logs for errors
+- **Environment variables not working?** Make sure to click "Deploy" after adding variables
+- **Need to restart?** Click "Actions" → "Restart" in Railway dashboard
+
+### What You Get
+- ✅ 24/7 automated operation
+- ✅ Daily emails at 8:00 AM PT
+- ✅ Works even when computer is off
+- ✅ Free tier available
+
+---
+
 **Questions? Open an issue on GitHub!**
