@@ -136,7 +136,13 @@ class EmailSender:
             # Connect to SMTP server once
             server = smtplib.SMTP(self.email_config['smtp_server'], self.email_config['smtp_port'])
             server.starttls()
-            server.login(self.email_config['sender_email'], self.email_config['sender_password'])
+
+            # SendGrid uses "apikey" as username, others use sender email
+            smtp_username = self.email_config.get('smtp_username') or (
+                'apikey' if 'sendgrid' in self.email_config['smtp_server'].lower()
+                else self.email_config['sender_email']
+            )
+            server.login(smtp_username, self.email_config['sender_password'])
 
             sent_count = 0
             errors = []
