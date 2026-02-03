@@ -23,7 +23,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
 import pytz
 import json
@@ -185,7 +185,13 @@ scheduler.start()
 # Flask Routes
 @app.route('/')
 def index():
-    """Health check endpoint."""
+    """Serve the subscription landing page."""
+    return send_file('index.html')
+
+
+@app.route('/api/info')
+def info():
+    """Service info endpoint."""
     return jsonify({
         'status': 'running',
         'service': 'China AI News Monitor',
