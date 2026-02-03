@@ -38,6 +38,19 @@ CORS(app)  # Enable CORS for frontend
 # Admin API key for protected endpoints
 ADMIN_API_KEY = os.environ.get('ADMIN_API_KEY', '')
 
+# Articles cache
+ARTICLES_CACHE_FILE = Path(__file__).parent / 'data' / 'latest_articles.json'
+
+def load_cached_articles() -> dict:
+    """Load articles from cache file."""
+    if ARTICLES_CACHE_FILE.exists():
+        try:
+            with open(ARTICLES_CACHE_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading articles cache: {e}")
+    return {}
+
 def require_api_key(f):
     """Decorator to require API key for admin endpoints."""
     from functools import wraps
@@ -165,18 +178,71 @@ class EmailSender:
             return False, str(e)
     
     def _build_html(self, now: datetime) -> str:
+        """Build HTML email with articles from cache."""
+        articles = load_cached_articles()
+
+        # Category display names and icons
+        category_info = {
+            'ai_releases': ('🤖 New AI Model & Product Releases', '#e63946'),
+            'government_policies': ('📜 AI & Technology Governance Policies', '#1d3557'),
+            'social_impact': ('📖 Long Reads: Social Impact of AI', '#2a9d8f')
+        }
+
+        # Build article sections
+        sections_html = ""
+        total_articles = 0
+
+        for category_key, (category_name, color) in category_info.items():
+            category_articles = articles.get(category_key, [])
+            total_articles += len(category_articles)
+
+            sections_html += f'''
+            <div style="margin: 20px 0;">
+                <h2 style="color: {color}; border-bottom: 2px solid {color}; padding-bottom: 8px;">
+                    {category_name}
+                </h2>
+            '''
+
+            if category_articles:
+                for article in category_articles[:10]:  # Limit to 10 per category
+                    title = article.get('title', 'Untitled')
+                    url = article.get('url', '#')
+                    source = article.get('source', 'Unknown')
+                    summary = article.get('summary', '')[:200] + '...' if article.get('summary') else ''
+
+                    sections_html += f'''
+                    <div style="margin: 12px 0; padding: 10px; background: #f8f9fa; border-radius: 6px;">
+                        <a href="{url}" style="color: #1a1a1a; text-decoration: none; font-weight: bold; font-size: 15px;">
+                            {title}
+                        </a>
+                        <div style="color: #666; font-size: 12px; margin-top: 4px;">
+                            📰 {source}
+                        </div>
+                        {f'<p style="color: #444; font-size: 13px; margin: 8px 0 0 0;">{summary}</p>' if summary else ''}
+                    </div>
+                    '''
+            else:
+                sections_html += '<p style="color: #999; font-style: italic;">No articles in this category today.</p>'
+
+            sections_html += '</div>'
+
         return f"""
         <html>
-        <body style="font-family: Arial, sans-serif; max-width: 700px; margin: 0 auto; padding: 20px;">
-            <h1 style="color: #1a1a1a;">🇨🇳 China AI News Daily</h1>
-            <p><strong>Date:</strong> {now.strftime('%Y年%m月%d日')}</p>
-            <hr>
-            <p>🤖 AI Model & Product Releases</p>
-            <p>📜 AI & Technology Governance Policies</p>
-            <p>📖 Long Reads: Social Impact of AI</p>
-            <hr>
-            <p style="color: #666;"><em>Automated daily digest from 180+ Chinese AI news sources</em></p>
-            <p style="color: #666; font-size: 12px;">GitHub: github.com/irenearzhang/china_ai_news_monitor</p>
+        <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; max-width: 700px; margin: 0 auto; padding: 20px; background: #ffffff;">
+            <div style="text-align: center; padding: 20px 0; border-bottom: 3px solid #e63946;">
+                <h1 style="color: #1a1a1a; margin: 0;">🇨🇳 China AI News Daily</h1>
+                <p style="color: #666; margin: 8px 0 0 0;">{now.strftime('%Y年%m月%d日')} · {total_articles} articles</p>
+            </div>
+
+            {sections_html}
+
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center;">
+                <p style="color: #666; font-size: 12px;">
+                    Automated daily digest from 180+ Chinese AI news sources<br>
+                    <a href="https://github.com/irenearzhang/china_ai_news_monitor" style="color: #e63946;">GitHub</a> ·
+                    <a href="https://china-ai-news-monitor.onrender.com" style="color: #e63946;">Subscribe</a>
+                </p>
+            </div>
         </body>
         </html>
         """
