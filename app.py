@@ -23,8 +23,10 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 import pytz
+import json
 import schedule
 import yaml
 import smtplib
@@ -33,6 +35,23 @@ from email.mime.multipart import MIMEMultipart
 from email.utils import formataddr
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for frontend
+
+# Subscribers storage
+SUBSCRIBERS_FILE = Path(__file__).parent / 'data' / 'subscribers.json'
+
+def load_subscribers() -> list:
+    """Load subscribers from JSON file."""
+    if SUBSCRIBERS_FILE.exists():
+        with open(SUBSCRIBERS_FILE, 'r') as f:
+            return json.load(f)
+    return []
+
+def save_subscribers(subscribers: list):
+    """Save subscribers to JSON file."""
+    SUBSCRIBERS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    with open(SUBSCRIBERS_FILE, 'w') as f:
+        json.dump(subscribers, f, indent=2)
 
 # Configuration
 class Config:
@@ -202,6 +221,86 @@ def status():
         'next_run': str(schedule.next_run()),
         'last_run': str(scheduler.last_run) if scheduler.last_run else None,
         'last_status': scheduler.last_status,
+    })
+
+
+@app.route('/api/subscribe', methods=['POST'])
+def subscribe():
+    """Subscribe an email to the newsletter."""
+    data = request.get_json()
+
+    if not data or not data.get('email'):
+        return jsonify({'success': False, 'error': 'Email is required'}), 400
+
+    email = data['email'].strip().lower()
+    name = data.get('name', '').strip()
+
+    # Basic email validation
+    if '@' not in email or '.' not in email:
+        return jsonify({'success': False, 'error': 'Invalid email address'}), 400
+
+    subscribers = load_subscribers()
+
+    # Check for duplicate
+    if any(s['email'] == email for s in subscribers):
+        return jsonify({'success': False, 'error': 'This email is already subscribed'}), 409
+
+    # Add new subscriber
+    subscribers.append({
+        'email': email,
+        'name': name,
+        'subscribed_at': datetime.now().isoformat(),
+        'active': True
+    })
+
+    save_subscribers(subscribers)
+
+    return jsonify({
+        'success': True,
+        'message': 'Successfully subscribed to China AI News Daily!'
+    })
+
+
+@app.route('/api/unsubscribe', methods=['POST'])
+def unsubscribe():
+    """Unsubscribe an email from the newsletter."""
+    data = request.get_json()
+
+    if not data or not data.get('email'):
+        return jsonify({'success': False, 'error': 'Email is required'}), 400
+
+    email = data['email'].strip().lower()
+    subscribers = load_subscribers()
+
+    # Find and deactivate subscriber
+    found = False
+    for s in subscribers:
+        if s['email'] == email:
+            s['active'] = False
+            s['unsubscribed_at'] = datetime.now().isoformat()
+            found = True
+            break
+
+    if not found:
+        return jsonify({'success': False, 'error': 'Email not found'}), 404
+
+    save_subscribers(subscribers)
+
+    return jsonify({
+        'success': True,
+        'message': 'Successfully unsubscribed'
+    })
+
+
+@app.route('/api/subscribers', methods=['GET'])
+def list_subscribers():
+    """List all active subscribers (admin endpoint)."""
+    subscribers = load_subscribers()
+    active = [s for s in subscribers if s.get('active', True)]
+    return jsonify({
+        'total': len(subscribers),
+        'active': len(active),
+        'subscribers': active
     })
 
 
