@@ -1,12 +1,11 @@
 # China AI News Monitor - Dependencies
 
-# Core dependencies
+# Core dependencies (note: smtplib is built into Python)
 PyYAML>=6.0
 python-dateutil>=2.8.2
 pytz>=2023.3
 
-# Email sending
-smtplib>=3.5.4
+# Email (smtplib and email are built into Python)
 email-validator>=2.0.0
 
 # HTTP requests (for direct API calls if needed)
