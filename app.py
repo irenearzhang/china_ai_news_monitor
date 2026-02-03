@@ -29,10 +29,8 @@ import pytz
 import json
 import schedule
 import yaml
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.utils import formataddr
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, Email, To, Content, HtmlContent
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend
@@ -111,9 +109,13 @@ class EmailSender:
         self.email_config = config.get('email', {})
     
     def send_digest(self, articles_by_category: dict = None):
-        """Send news digest email to all active subscribers."""
+        """Send news digest email to all active subscribers via SendGrid API."""
         if not self.email_config.get('sender_email'):
             return False, "Sender email not configured"
+
+        api_key = self.email_config.get('sender_password')  # API key stored here
+        if not api_key:
+            return False, "SendGrid API key not configured"
 
         # Get all recipients: subscribers + fallback to RECIPIENT_EMAIL
         subscribers = load_subscribers()
@@ -133,40 +135,27 @@ class EmailSender:
             subject = f"🇨🇳 China AI News Daily - {now.strftime('%Y年%m月%d日')}"
             html = self._build_html(now)
 
-            # Connect to SMTP server once
-            server = smtplib.SMTP(self.email_config['smtp_server'], self.email_config['smtp_port'])
-            server.starttls()
-
-            # SendGrid uses "apikey" as username, others use sender email
-            smtp_username = self.email_config.get('smtp_username') or (
-                'apikey' if 'sendgrid' in self.email_config['smtp_server'].lower()
-                else self.email_config['sender_email']
-            )
-            server.login(smtp_username, self.email_config['sender_password'])
-
+            sg = SendGridAPIClient(api_key)
             sent_count = 0
             errors = []
 
             # Send to each subscriber individually
             for recipient in active_emails:
                 try:
-                    msg = MIMEMultipart('alternative')
-                    msg['Subject'] = subject
-                    msg['From'] = formataddr((self.email_config.get('sender_name', 'China AI News Monitor'),
-                                             self.email_config['sender_email']))
-                    msg['To'] = recipient
-
-                    part1 = MIMEText("", 'plain', 'utf-8')
-                    part2 = MIMEText(html, 'html', 'utf-8')
-                    msg.attach(part1)
-                    msg.attach(part2)
-
-                    server.send_message(msg)
-                    sent_count += 1
+                    message = Mail(
+                        from_email=Email(self.email_config['sender_email'],
+                                        self.email_config.get('sender_name', 'China AI News Monitor')),
+                        to_emails=To(recipient),
+                        subject=subject,
+                        html_content=html
+                    )
+                    response = sg.send(message)
+                    if response.status_code in [200, 201, 202]:
+                        sent_count += 1
+                    else:
+                        errors.append(f"{recipient}: HTTP {response.status_code}")
                 except Exception as e:
                     errors.append(f"{recipient}: {str(e)}")
-
-            server.quit()
 
             if errors:
                 return True, f"Sent to {sent_count}/{len(active_emails)} recipients. Errors: {errors}"
